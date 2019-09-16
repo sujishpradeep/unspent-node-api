@@ -1,0 +1,7 @@
+{
+  "db": "mongodb://localhost/unspent"
+}
+
+//  "db": "mongodb://localhost/trailo"
+//  "db": "mongodb+srv://sujish:sujish@cluster0-xo0pa.azure.mongodb.net/trailo"
+//"db": "mongodb+srv://sujish:sujish@cluster0-xo0pa.azure.mongodb.net/"
