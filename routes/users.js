@@ -4,6 +4,7 @@ const Joi = require("joi");
 const _ = require("lodash");
 const jwt = require("jsonwebtoken");
 const auth = require("../middleware/auth");
+const https = require("https");
 const { User, validate } = require("../models/user");
 const { Account } = require("../models/account");
 const bcrypt = require("bcrypt");
@@ -37,31 +38,40 @@ router.post("/", async (req, res) => {
     if (user)
       return res
         .status(400)
-        .send("User with this Email ID has already signed up");
+        .send(
+          "User with this Email ID has already signed up. Please login and continue"
+        );
 
     account = new Account({
       fullname: req.body.fullname,
-      userid: req.body.email
+      userid: req.body.email,
+      rewards: [],
+      redeems: [],
+      boxes: []
     });
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(req.body.password, salt);
 
     account = await account.save();
 
+    console.log("account", account._id);
     user = new User({
       email: req.body.email,
       fullname: req.body.fullname,
       password: hashed,
-      loginmethod: req.body.loginmethod
+      loginmethod: req.body.loginmethod,
+      accountid: account._id
     });
     user = await user.save();
 
     const token = generateAuthToken(user);
 
+    console.log("user", user);
+
     res
       .header("x-auth-token", token)
       .header("access-control-expose-headers", "x-auth-token")
-      .send(_.pick(user, ["email", "fullname", "loginmethod"]));
+      .send(_.pick(user, ["email", "fullname", "loginmethod", "accountid"]));
   } catch (error) {
     console.log(error.message);
     res.status(404).send(error.message);
@@ -90,12 +100,98 @@ router.post("/auth/", async (req, res) => {
   }
 });
 
+//LOGIN - VERIFY USER NAME AND PASSWORD AND POST TOKEN
+router.post("/authgoogle/", async (req, res) => {
+  try {
+    let user = await User.findOne({ email: req.body.email });
+    console.log("user", user);
+    if (!user) {
+      console.log("NEW User");
+      account = new Account({
+        fullname: req.body.fullname,
+        userid: req.body.email,
+        rewards: [],
+        redeems: [],
+        boxes: []
+      });
+      const salt = await bcrypt.genSalt(10);
+      const hashed = await bcrypt.hash(req.body.password, salt);
+
+      account = await account.save();
+
+      console.log("account", account._id);
+      user = new User({
+        email: req.body.email,
+        fullname: req.body.fullname,
+        password: hashed,
+        loginmethod: req.body.loginmethod,
+        accountid: account._id
+      });
+      user = await user.save();
+
+      const token = generateAuthToken(user);
+
+      console.log("token", token);
+
+      return res
+        .header("x-auth-token", token)
+        .header("access-control-expose-headers", "x-auth-token")
+        .send(_.pick(user, ["email", "fullname", "loginmethod", "accountid"]));
+      console.log("RES SENT");
+    }
+
+    console.log("EXISTING USER");
+
+    const url = `https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${req.body.password}`;
+    console.log("url ", url);
+
+    await https
+      .get(url, resp => {
+        let data = "";
+
+        // A chunk of data has been recieved.
+        resp.on("data", chunk => {
+          data += chunk;
+          console.log("data chunk ", data);
+        });
+
+        // The whole response has been received. Print out the result.
+        resp.on("end", () => {
+          console.log("data end ", data);
+          console.log(JSON.parse(data));
+          // user.email = JSON.parse(data).email;
+          // user.fullname = JSON.parse(data).name;
+          // user.logingmethod = "google";
+          // user.accountid=  user.accountid
+          console.log("user", user);
+
+          const token = generateAuthToken(user);
+
+          console.log("token", token);
+
+          return res
+            .header("x-auth-token", token)
+            .header("access-control-expose-headers", "x-auth-token")
+            .send(
+              _.pick(user, ["email", "fullname", "loginmethod", "accountid"])
+            );
+        });
+      })
+      .on("error", err => {
+        return res.status(400).send("Access Denied! Invalid login credentials");
+      });
+  } catch (error) {
+    console.log("error", error);
+  }
+});
+
 generateAuthToken = function(user) {
   const token = jwt.sign(
     {
       email: user.email,
       fullname: user.fullname,
-      loginmethod: user.loginmethod
+      loginmethod: user.loginmethod,
+      accountid: user.accountid
     },
     "unspent_jwtPrivateKey"
   );

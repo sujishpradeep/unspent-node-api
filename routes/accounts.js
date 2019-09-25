@@ -15,10 +15,8 @@ router.get("/", async (req, res) => {
 //Get Account by ID
 router.get("/:id", auth, async (req, res) => {
   try {
-    console.log("usertype", req.usertype, req.user);
-    let account = await Account.findOne({
-      //    _id: new ObjectId(req.params.id)
-      userid: req.user
+    let account = await Account.findById({
+      _id: new ObjectId(req.params.id)
     });
     if (!account) return res.status(404).send("Account not found");
 
@@ -41,16 +39,6 @@ router.get("/boxes/:id", async (req, res) => {
   }
 });
 
-//Delete Account by ID
-router.delete("/accounts/:id", async (req, res) => {
-  try {
-    let account = await Account.findByIdAndDelete({ _id: req.params.id });
-    res.send(account);
-  } catch (error) {
-    console.log("error", error);
-  }
-});
-
 //POSTS
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
@@ -68,6 +56,25 @@ router.post("/", async (req, res) => {
   try {
     account = await account.save();
     res.send(account);
+  } catch (error) {
+    console.log(error);
+    res.status(404).send(error.message);
+  }
+});
+
+//Refresh Account
+router.post("/refresh/:id", auth, async (req, res) => {
+  try {
+    account = await Account.findOneAndUpdate(
+      { _id: req.params.id },
+      { rewards: [], redeems: [], boxes: [] },
+      { new: true }
+    );
+
+    //If invalid, return 400 - Bad request
+    if (!account) return res.status(400).send("Account does not exist");
+
+    res.send(account.rewards);
   } catch (error) {
     console.log(error);
     res.status(404).send(error.message);

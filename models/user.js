@@ -5,7 +5,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true },
   password: { type: String, required: true },
   fullname: { type: String, required: true },
-  loginmethod: { type: String, required: true }
+  loginmethod: { type: String, required: true },
+  accountid: { type: String }
 });
 
 const User = mongoose.model("User", userSchema);
@@ -47,7 +48,8 @@ function validateUser(user) {
         };
       }),
 
-    loginmethod: Joi.string().required()
+    loginmethod: Joi.string().required(),
+    accountid: Joi.string().optional()
   });
   return Joi.validate(user, schema);
 }
