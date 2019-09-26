@@ -22,8 +22,6 @@ function validateReward(reward) {
     timestamp: Joi.optional()
   };
 
-  console.log("in validate rewards ", reward);
-
   return Joi.validate(reward, schema);
 }
 

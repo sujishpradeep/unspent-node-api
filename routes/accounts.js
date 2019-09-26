@@ -29,7 +29,6 @@ router.get("/:id", auth, async (req, res) => {
 //Get Boxes by ID
 router.get("/boxes/:id", async (req, res) => {
   try {
-    console.log("req.params.id", req.params.id);
     let account = await Account.findOne({
       _id: new ObjectId(req.params.id)
     });
@@ -83,15 +82,12 @@ router.post("/refresh/:id", auth, async (req, res) => {
 
 //Put New Reward
 router.put("/rewards/:id", async (req, res) => {
-  console.log("in validate");
   let { error } = validateRewards(req.body);
 
   //If invalid, return 400 - Bad request
   if (error) return res.status(400).send(error.details[0].message);
 
   const reward = req.body;
-
-  console.log("reward ", reward);
 
   try {
     account = await Account.findOneAndUpdate(
@@ -105,22 +101,18 @@ router.put("/rewards/:id", async (req, res) => {
 
     res.send(account.rewards);
   } catch (error) {
-    console.log(error);
     res.status(404).send(error.message);
   }
 });
 
 //Put New Redeem
 router.put("/redeems/:id", async (req, res) => {
-  console.log("in validate");
   let { error } = validateRedeems(req.body);
 
   //If invalid, return 400 - Bad request
   if (error) return res.status(400).send(error.details[0].message);
 
   const redeem = req.body;
-
-  console.log("redeem ", redeem);
 
   try {
     account = await Account.findOneAndUpdate(
@@ -134,7 +126,6 @@ router.put("/redeems/:id", async (req, res) => {
 
     res.send(account.redeems);
   } catch (error) {
-    console.log(error);
     res.status(404).send(error.message);
   }
 });
@@ -145,7 +136,6 @@ router.put("/boxes/:id", async (req, res) => {
   if (!Array.isArray(req.body))
     return res.status(400).send("Boxes must be an array");
 
-  console.log("req.body", req.body);
   const boxes = req.body;
 
   try {

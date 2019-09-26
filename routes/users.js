@@ -26,9 +26,6 @@ router.get("/:id", async (req, res) => {
 //SIGNUP - ADD NEW USER AND GENERATE SEND TOKEN
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
-
-  console.log("req.body", req.body);
-  console.log("error", error);
   //If invalid, return 400 - Bad request
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -53,8 +50,6 @@ router.post("/", async (req, res) => {
     const hashed = await bcrypt.hash(req.body.password, salt);
 
     account = await account.save();
-
-    console.log("account", account._id);
     user = new User({
       email: req.body.email,
       fullname: req.body.fullname,
@@ -65,8 +60,6 @@ router.post("/", async (req, res) => {
     user = await user.save();
 
     const token = generateAuthToken(user);
-
-    console.log("user", user);
 
     res
       .header("x-auth-token", token)
@@ -82,15 +75,12 @@ router.post("/", async (req, res) => {
 router.post("/auth/", async (req, res) => {
   try {
     let user = await User.findOne({ email: req.body.email });
-    console.log("user", user);
     if (!user) return res.status(400).send("INVALID USER/PASSWORD");
 
     const validPassword = await bcrypt.compare(
       req.body.password,
       user.password
     );
-
-    console.log("validPassword", validPassword);
     if (!validPassword) return res.status(400).send("INVALID USER/PASSWORD");
 
     const token = generateAuthToken(user);
@@ -104,9 +94,7 @@ router.post("/auth/", async (req, res) => {
 router.post("/authgoogle/", async (req, res) => {
   try {
     let user = await User.findOne({ email: req.body.email });
-    console.log("user", user);
     if (!user) {
-      console.log("NEW User");
       account = new Account({
         fullname: req.body.fullname,
         userid: req.body.email,
@@ -118,8 +106,6 @@ router.post("/authgoogle/", async (req, res) => {
       const hashed = await bcrypt.hash(req.body.password, salt);
 
       account = await account.save();
-
-      console.log("account", account._id);
       user = new User({
         email: req.body.email,
         fullname: req.body.fullname,
@@ -131,19 +117,13 @@ router.post("/authgoogle/", async (req, res) => {
 
       const token = generateAuthToken(user);
 
-      console.log("token", token);
-
       return res
         .header("x-auth-token", token)
         .header("access-control-expose-headers", "x-auth-token")
         .send(_.pick(user, ["email", "fullname", "loginmethod", "accountid"]));
-      console.log("RES SENT");
     }
 
-    console.log("EXISTING USER");
-
     const url = `https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${req.body.password}`;
-    console.log("url ", url);
 
     await https
       .get(url, resp => {
@@ -152,22 +132,11 @@ router.post("/authgoogle/", async (req, res) => {
         // A chunk of data has been recieved.
         resp.on("data", chunk => {
           data += chunk;
-          console.log("data chunk ", data);
         });
 
         // The whole response has been received. Print out the result.
         resp.on("end", () => {
-          console.log("data end ", data);
-          console.log(JSON.parse(data));
-          // user.email = JSON.parse(data).email;
-          // user.fullname = JSON.parse(data).name;
-          // user.logingmethod = "google";
-          // user.accountid=  user.accountid
-          console.log("user", user);
-
           const token = generateAuthToken(user);
-
-          console.log("token", token);
 
           return res
             .header("x-auth-token", token)
