@@ -12,6 +12,5 @@ module.exports = function(app) {
   app.use(express.static(path.join(__dirname, `client/build`)));
   app.use("/api/users", users);
   app.use("/api/accounts", accounts);
-  app.use("/api/rewards", rewards);
   app.use(error);
 };

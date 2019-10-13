@@ -6,11 +6,11 @@ const { validate: validateRedeems } = require("../models/redeem");
 var ObjectId = require("mongoose").Types.ObjectId;
 const auth = require("../middleware/auth");
 
-//GET ALL
-router.get("/", async (req, res) => {
-  const Accounts = await Account.find();
-  res.send(Accounts);
-});
+// //GET ALL
+// router.get("/", auth, async (req, res) => {
+//   const Accounts = await Account.find();
+//   res.send(Accounts);
+// });
 
 //Get Account by ID
 router.get("/:id", auth, async (req, res) => {
@@ -27,7 +27,7 @@ router.get("/:id", auth, async (req, res) => {
 });
 
 //Get Boxes by ID
-router.get("/boxes/:id", async (req, res) => {
+router.get("/boxes/:id", auth, async (req, res) => {
   try {
     let account = await Account.findOne({
       _id: new ObjectId(req.params.id)
@@ -39,7 +39,7 @@ router.get("/boxes/:id", async (req, res) => {
 });
 
 //POSTS
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   //If invalid, return 400 - Bad request
   if (error) return res.status(400).send(error.details[0].message);
@@ -81,7 +81,7 @@ router.post("/refresh/:id", auth, async (req, res) => {
 });
 
 //Put New Reward
-router.put("/rewards/:id", async (req, res) => {
+router.put("/rewards/:id", auth, async (req, res) => {
   let { error } = validateRewards(req.body);
 
   //If invalid, return 400 - Bad request
@@ -106,7 +106,7 @@ router.put("/rewards/:id", async (req, res) => {
 });
 
 //Put New Redeem
-router.put("/redeems/:id", async (req, res) => {
+router.put("/redeems/:id", auth, async (req, res) => {
   let { error } = validateRedeems(req.body);
 
   //If invalid, return 400 - Bad request
@@ -131,7 +131,7 @@ router.put("/redeems/:id", async (req, res) => {
 });
 
 //Update Boxes
-router.put("/boxes/:id", async (req, res) => {
+router.put("/boxes/:id", auth, async (req, res) => {
   //If invalid, return 400 - Bad request
   if (!Array.isArray(req.body))
     return res.status(400).send("Boxes must be an array");
