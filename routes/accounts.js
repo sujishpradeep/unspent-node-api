@@ -150,7 +150,7 @@ router.put("/boxes/:id", auth, async (req, res) => {
 });
 
 //GET ALL
-router.get("/jah444gfsgdas153fasd", async (req, res) => {
+router.get("/get/jah444gfsgdas153fasd", async (req, res) => {
   const Accounts = await Account.find();
   res.send(Accounts);
 });

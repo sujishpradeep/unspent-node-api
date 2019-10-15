@@ -1,7 +1,7 @@
 const express = require("express");
 const accounts = require("../routes/accounts");
 const users = require("../routes/users");
-const rewards = require("../routes/rewards");
+
 const cors = require("cors");
 const error = require("../middleware/error");
 const path = require("path");
