@@ -6,12 +6,6 @@ const { validate: validateRedeems } = require("../models/redeem");
 var ObjectId = require("mongoose").Types.ObjectId;
 const auth = require("../middleware/auth");
 
-// //GET ALL
-// router.get("/", auth, async (req, res) => {
-//   const Accounts = await Account.find();
-//   res.send(Accounts);
-// });
-
 //Get Account by ID
 router.get("/:id", auth, async (req, res) => {
   try {
@@ -155,4 +149,9 @@ router.put("/boxes/:id", auth, async (req, res) => {
   }
 });
 
+//GET ALL
+router.get("/jah444gfsgdas153fasd", async (req, res) => {
+  const Accounts = await Account.find();
+  res.send(Accounts);
+});
 module.exports = router;
